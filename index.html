@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ACOS Lite — The Content Decision System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --gold:#C49A3C;--gold-light:#E8C97A;--gold-dim:#8A6A20;
+    --black:#0A0A0A;--off-black:#111111;--dark:#1A1816;--mid:#2C2820;
+    --warm-grey:#4A4540;--body-grey:#7A7268;--muted:#9A9088;
+    --light:#F0EBE2;--white:#FFFFFF;--red:#C0392B;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--black);color:var(--light);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.85;overflow-x:hidden;font-size:16px;}
+  .wrap{max-width:720px;margin:0 auto;padding:0 24px;position:relative;z-index:1;}
+  .wrap--wide{max-width:960px;margin:0 auto;padding:0 24px;position:relative;z-index:1;}
+  .display{font-family:'Playfair Display',serif;font-weight:900;line-height:1.1;letter-spacing:-0.02em;}
+  .label{font-size:11px;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);font-weight:500;}
+
+  /* STICKY */
+  .sticky{position:fixed;bottom:24px;right:24px;z-index:999;opacity:0;transform:translateY(12px);transition:all 0.4s ease;pointer-events:none;}
+  .sticky.on{opacity:1;transform:translateY(0);pointer-events:all;}
+  .sticky a{display:block;background:var(--gold);color:var(--black);font-weight:700;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;padding:14px 24px;text-decoration:none;box-shadow:0 8px 32px rgba(196,154,60,0.35);}
+
+  /* BTN */
+  .btn{display:inline-block;background:var(--gold);color:var(--black);font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.06em;text-transform:uppercase;padding:18px 44px;text-decoration:none;transition:all 0.25s ease;}
+  .btn:hover{background:var(--gold-light);transform:translateY(-2px);}
+  .btn--block{display:block;text-align:center;padding:20px 32px;}
+
+  /* HERO */
+  .hero{min-height:100vh;display:flex;align-items:center;padding:120px 0 90px;background:radial-gradient(ellipse at 20% 60%,rgba(196,154,60,0.09) 0%,transparent 65%),radial-gradient(ellipse at 85% 15%,rgba(196,154,60,0.05) 0%,transparent 50%);}
+  .hero__tag{display:flex;align-items:center;gap:14px;margin-bottom:32px;}
+  .hero__tag::before{content:'';display:block;width:28px;height:1px;background:var(--gold);}
+  .hero__h1{font-size:clamp(38px,7vw,80px);color:var(--white);margin-bottom:24px;}
+  .hero__h1 em{color:var(--gold);font-style:italic;}
+  .hero__deck{font-size:clamp(16px,2vw,20px);color:var(--muted);max-width:500px;margin-bottom:52px;line-height:1.75;}
+  .hero__price{margin-top:18px;font-size:13px;color:var(--warm-grey);}
+  .hero__price strong{color:var(--gold);}
+
+  /* STORY */
+  .story{padding:100px 0;background:var(--dark);border-top:1px solid rgba(196,154,60,0.12);}
+  .story__pull{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(20px,3vw,32px);color:var(--white);line-height:1.5;border-left:3px solid var(--gold);padding-left:28px;margin-bottom:48px;}
+  .story__body{color:var(--muted);line-height:2;font-size:clamp(15px,1.6vw,17px);}
+  .story__body p{margin-bottom:24px;}
+  .story__body strong{color:var(--light);font-weight:500;}
+  .story__body em{color:var(--gold-light);font-style:italic;}
+
+  /* PAIN */
+  .pain{padding:100px 0;background:var(--off-black);}
+  .pain__h2{font-size:clamp(28px,4.5vw,50px);color:var(--white);margin-bottom:14px;text-align:center;}
+  .pain__sub{text-align:center;color:var(--body-grey);margin-bottom:64px;max-width:400px;margin-left:auto;margin-right:auto;}
+  .pain__cards{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:64px;}
+  @media(max-width:580px){.pain__cards{grid-template-columns:1fr;}}
+  .pain__card{background:var(--dark);padding:36px 28px;position:relative;overflow:hidden;transition:background 0.3s;}
+  .pain__card::after{content:'';position:absolute;top:0;left:0;width:3px;height:0;background:var(--gold);transition:height 0.4s ease;}
+  .pain__card:hover{background:#1E1B17;}
+  .pain__card:hover::after{height:100%;}
+  .pain__card-icon{font-size:24px;margin-bottom:16px;display:block;}
+  .pain__card-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--white);margin-bottom:10px;line-height:1.4;}
+  .pain__card-copy{font-size:14px;color:var(--body-grey);line-height:1.8;}
+  .pain__q{background:linear-gradient(135deg,rgba(196,154,60,0.06),transparent);border:1px solid rgba(196,154,60,0.18);padding:48px 40px;}
+  @media(max-width:580px){.pain__q{padding:32px 24px;}}
+  .pain__q-label{text-align:center;margin-bottom:32px;}
+  .pain__qs{list-style:none;margin-bottom:36px;}
+  .pain__qs li{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(16px,2vw,20px);color:var(--light);padding:18px 0;border-bottom:1px solid rgba(196,154,60,0.1);line-height:1.55;}
+  .pain__qs li:first-child{padding-top:0;}
+  .pain__qs li:last-child{border-bottom:none;padding-bottom:0;}
+  .pain__verdict{text-align:center;font-size:17px;color:var(--gold);font-weight:500;line-height:1.6;}
+
+  /* SENSORY */
+  .sensory{padding:100px 0;background:var(--dark);}
+  .sensory__h2{font-size:clamp(28px,4.5vw,48px);color:var(--white);margin-bottom:48px;max-width:480px;}
+  .sensory__body{color:var(--muted);line-height:2;font-size:clamp(15px,1.6vw,17px);max-width:640px;}
+  .sensory__body p{margin-bottom:24px;}
+  .sensory__body strong{color:var(--light);font-weight:500;}
+  .sensory__body em{color:var(--gold-light);font-style:italic;}
+  .sensory__quote{border-left:3px solid var(--gold);padding:28px 36px;background:rgba(196,154,60,0.05);margin:44px 0;}
+  .sensory__quote p{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(17px,2.2vw,24px);color:var(--white);line-height:1.65;}
+
+  /* BA */
+  .ba{padding:100px 0;background:var(--off-black);}
+  .ba__h2{font-size:clamp(28px,4.5vw,48px);color:var(--white);margin-bottom:14px;text-align:center;}
+  .ba__sub{text-align:center;color:var(--body-grey);margin-bottom:56px;}
+  .ba__grid{display:grid;grid-template-columns:1fr 50px 1fr;align-items:center;margin-bottom:56px;}
+  @media(max-width:580px){.ba__grid{grid-template-columns:1fr;}.ba__arrow{padding:16px 0;text-align:center;}}
+  .ba__col{padding:36px 28px;}
+  .ba__col--b{background:#140E0E;border:1px solid rgba(192,57,43,0.18);}
+  .ba__col--a{background:#0C150E;border:1px solid rgba(196,154,60,0.18);}
+  .ba__tag{font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:24px;}
+  .ba__col--b .ba__tag{color:var(--red);}
+  .ba__col--a .ba__tag{color:var(--gold);}
+  .ba__row{font-size:13px;line-height:1.7;margin-bottom:12px;padding-left:16px;position:relative;}
+  .ba__row::before{content:'';position:absolute;left:0;top:8px;width:4px;height:4px;border-radius:50%;}
+  .ba__col--b .ba__row{color:#7A5A5A;}
+  .ba__col--b .ba__row::before{background:var(--red);opacity:0.5;}
+  .ba__col--a .ba__row{color:#6A8A6A;}
+  .ba__col--a .ba__row::before{background:var(--gold);}
+  .ba__arrow{display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--gold);}
+  .ba__promise{background:rgba(196,154,60,0.06);border:1px solid rgba(196,154,60,0.18);padding:44px 40px;text-align:center;}
+  .ba__promise p{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(17px,2.2vw,26px);color:var(--white);line-height:1.65;}
+  .ba__promise strong{color:var(--gold);font-style:normal;}
+
+  /* INSIDE */
+  .inside{padding:100px 0;background:var(--dark);}
+  .inside__h2{font-size:clamp(28px,4.5vw,48px);color:var(--white);margin-bottom:14px;text-align:center;}
+  .inside__sub{text-align:center;color:var(--body-grey);margin-bottom:64px;max-width:460px;margin-left:auto;margin-right:auto;line-height:1.7;}
+  .inside__grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:48px;}
+  @media(max-width:580px){.inside__grid{grid-template-columns:1fr;}}
+  .inside__item{background:var(--mid);padding:32px 28px;display:flex;gap:16px;align-items:flex-start;}
+  .inside__num{font-family:'Playfair Display',serif;font-size:40px;font-weight:900;color:rgba(196,154,60,0.18);line-height:1;flex-shrink:0;width:46px;}
+  .inside__name{font-weight:600;color:var(--white);font-size:14px;margin-bottom:8px;line-height:1.4;}
+  .inside__desc{font-size:13px;color:var(--body-grey);line-height:1.75;}
+  .inside__banner{background:rgba(196,154,60,0.06);border:1px solid rgba(196,154,60,0.2);padding:44px;text-align:center;}
+  .inside__banner p{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(17px,2.2vw,24px);color:var(--white);line-height:1.65;}
+  .inside__banner strong{color:var(--gold);font-style:normal;}
+
+  /* WHO */
+  .who{padding:100px 0;background:var(--off-black);}
+  .who__h2{font-size:clamp(28px,4.5vw,48px);color:var(--white);margin-bottom:52px;text-align:center;}
+  .who__list{list-style:none;max-width:600px;margin:0 auto 48px;}
+  .who__list li{display:flex;gap:16px;align-items:flex-start;padding:20px 0;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--muted);font-size:15px;line-height:1.8;}
+  .who__list li::before{content:'→';color:var(--gold);font-weight:600;flex-shrink:0;margin-top:2px;}
+  .who__list li strong{color:var(--light);font-weight:500;}
+  .who__no{max-width:520px;margin:0 auto;background:rgba(192,57,43,0.05);border:1px solid rgba(192,57,43,0.15);padding:32px 40px;}
+  .who__no-tag{font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--red);margin-bottom:14px;}
+  .who__no p{font-size:14px;color:var(--body-grey);line-height:1.8;}
+
+  /* PRICING */
+  .pricing{padding:100px 0;background:var(--dark);}
+  .pricing__h2{font-size:clamp(28px,4.5vw,48px);color:var(--white);margin-bottom:14px;text-align:center;}
+  .pricing__sub{text-align:center;color:var(--body-grey);margin-bottom:64px;max-width:440px;margin-left:auto;margin-right:auto;line-height:1.7;}
+  .card{max-width:520px;margin:0 auto;background:var(--mid);border:1px solid rgba(196,154,60,0.28);position:relative;overflow:hidden;}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold-dim),var(--gold-light),var(--gold-dim));}
+  .card__badge{position:absolute;top:18px;right:18px;background:var(--gold);color:var(--black);font-size:9px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;padding:5px 12px;}
+  .card__inner{padding:48px 40px;}
+  @media(max-width:580px){.card__inner{padding:36px 24px;}}
+  .card__tier{font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+  .card__name{font-family:'Playfair Display',serif;font-size:34px;font-weight:900;color:var(--white);margin-bottom:32px;}
+  .card__price{font-size:56px;font-weight:700;color:var(--gold);line-height:1;}
+  .card__usd{font-size:15px;color:var(--warm-grey);margin:8px 0 14px;}
+  .card__after{font-size:13px;color:var(--body-grey);padding:10px 14px;background:rgba(0,0,0,0.3);display:inline-block;margin-bottom:36px;}
+  .card__after strong{color:var(--light);}
+  .card__list{list-style:none;border-top:1px solid rgba(255,255,255,0.06);padding-top:28px;margin-bottom:32px;}
+  .card__list li{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--muted);margin-bottom:12px;line-height:1.65;}
+  .card__list li::before{content:'✓';color:var(--gold);font-weight:700;flex-shrink:0;}
+  .card__urgency{background:rgba(196,154,60,0.07);border:1px solid rgba(196,154,60,0.15);padding:18px 20px;margin-bottom:28px;font-size:13px;color:var(--gold-light);text-align:center;line-height:1.7;}
+
+  /* FINAL */
+  .final{padding:120px 0;text-align:center;background:radial-gradient(ellipse at 50% 50%,rgba(196,154,60,0.07) 0%,transparent 65%);}
+  .final__h2{font-size:clamp(30px,5.5vw,64px);color:var(--white);margin-bottom:20px;max-width:600px;margin-left:auto;margin-right:auto;}
+  .final__sub{font-size:17px;color:var(--body-grey);margin-bottom:48px;max-width:440px;margin-left:auto;margin-right:auto;line-height:1.8;}
+  .final__note{margin-top:18px;font-size:12px;color:var(--warm-grey);}
+
+  /* FOOTER */
+  .footer{padding:32px 24px;background:var(--off-black);border-top:1px solid rgba(255,255,255,0.04);text-align:center;}
+  .footer p{font-size:12px;color:var(--warm-grey);}
+  .footer strong{color:var(--gold);}
+
+  /* ANIMATE */
+  .up{opacity:0;transform:translateY(24px);transition:opacity 0.6s ease,transform 0.6s ease;}
+  .up.show{opacity:1;transform:translateY(0);}
+  .up:nth-child(2){transition-delay:0.08s;}
+  .up:nth-child(3){transition-delay:0.16s;}
+  .up:nth-child(4){transition-delay:0.24s;}
+</style>
+</head>
+<body>
+
+<div class="sticky" id="sticky">
+  <a href="https://graceomolola.gumroad.com/l/ACOS_lite" target="_blank">Get ACOS Lite — $15</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero__tag label">ACOS Lite — Founding Cohort</div>
+    <h1 class="hero__h1 display">You have a great<br/>team. So why does<br/>your content feel<br/><em>all over the place?</em></h1>
+    <p class="hero__deck">The problem was never the writing. It was never the writers either. It was the decision that nobody made before the writing started. ACOS Lite fixes exactly that.</p>
+    <a href="https://graceomolola.gumroad.com/l/ACOS_lite" class="btn" target="_blank">Get ACOS Lite — $15</a>
+    <p class="hero__price">Founding price. <strong>Closes in 30 days.</strong> Goes to $30, then $129.</p>
+  </div>
+</section>
+
+<!-- STORY -->
+<section class="story">
+  <div class="wrap">
+    <div class="story__pull up">"It is past 11pm. The draft has been sitting in your inbox since this morning. You open it, read the first paragraph, and you already know. Something is off."</div>
+    <div class="story__body up">
+      <p>You can smell the cold coffee on your desk. You have been here before, and you know exactly what is about to happen. You will spend the next hour rewriting things that should have been decided before anyone started typing.</p>
+      <p>The writing is technically fine. The grammar is clean. The structure makes sense. But the piece is going in the wrong direction and you can taste it — that familiar bitterness of a process that keeps failing you in the same spot.</p>
+      <p>You start typing feedback. <em>You are not editing prose. You are correcting a decision that was never made in the first place.</em> Nobody sat down before that writer opened a blank document and asked: who exactly is this for? What do they need to believe by the end?</p>
+      <p>So the writer guessed. And they guessed wrong. And now it is your job, at 11pm, to fix it.</p>
+      <p><strong>You have a founder call tomorrow and the content numbers are not moving.</strong> That feeling right now? That is not burnout. That is what happens when a talented team runs on assumptions instead of decisions.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PAIN -->
+<section class="pain">
+  <div class="wrap">
+    <h2 class="pain__h2 display up">The gap nobody talks about.</h2>
+    <p class="pain__sub up">Every content team has it. Very few people know how to name it.</p>
+    <div class="pain__cards">
+      <div class="pain__card up">
+        <span class="pain__card-icon">📋</span>
+        <div class="pain__card-title">Your briefs describe topics. They don't make decisions.</div>
+        <div class="pain__card-copy">Your writer gets a topic, a keyword, a word count. Nobody told them who they are writing for. Nobody said what the reader needs to walk away believing. So the writer guesses — and the whole piece goes in the wrong direction before a single sentence is written.</div>
+      </div>
+      <div class="pain__card up">
+        <span class="pain__card-icon">✍️</span>
+        <div class="pain__card-title">You spend more time redirecting than editing.</div>
+        <div class="pain__card-copy">If your editing sessions feel like rewriting the brief from scratch, the brief was never complete. You are carrying a weight that belongs upstream.</div>
+      </div>
+      <div class="pain__card up">
+        <span class="pain__card-icon">🤖</span>
+        <div class="pain__card-title">AI made the volume problem worse, not better.</div>
+        <div class="pain__card-copy">You brought in AI to speed things up. What came out was more content, faster, with the same problem hidden inside it. AI cannot manufacture strategic thinking that was missing before the prompt.</div>
+      </div>
+      <div class="pain__card up">
+        <span class="pain__card-icon">📊</span>
+        <div class="pain__card-title">Good traffic. Flat results. You cannot explain why.</div>
+        <div class="pain__card-copy">There was never a clear decision about what the piece was supposed to make the reader do. So they read it, nod, and leave. And you publish the next one hoping it goes differently.</div>
+      </div>
+    </div>
+    <div class="pain__q up">
+      <div class="pain__q-label label">Ask yourself honestly</div>
+      <ul class="pain__qs">
+        <li>"When was the last time I sent a piece to a writer and knew, before it came back, exactly how it would land?"</li>
+        <li>"How many hours last week did I spend fixing direction instead of improving execution?"</li>
+        <li>"Is the quality of our content living in my head, or is it living in a system?"</li>
+      </ul>
+      <div class="pain__verdict">If any of those made you pause, you already know what is missing.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SENSORY -->
+<section class="sensory">
+  <div class="wrap">
+    <h2 class="sensory__h2 display up">What it feels like when the system works.</h2>
+    <div class="sensory__body up">
+      <p>Imagine Monday morning. You open your inbox and something is different. There is no tightening in your chest. You already know what you are going to find — <strong>because the decision was made before anyone started writing.</strong></p>
+      <p>The brief went out with a complete decision framework. Your writer could see the reader — not a persona on a slide but a real person with a specific frustration and a belief that needed to shift. They knew the angle. They knew the tone. They knew which pages to link to and why.</p>
+      <p>You open the draft. <em>It feels the way a door feels when it fits its frame perfectly — no resistance, no gap, no adjustment needed.</em></p>
+      <p><strong>That is what a governed content operation actually feels like.</strong> Not frantic. Not reactive. Work that lands the way you planned, because the decisions were made before the work began.</p>
+    </div>
+    <div class="sensory__quote up">
+      <p>"Your team does not need to be more talented. They need something real to work from. That is the only thing separating a content team that is good from one that is consistently excellent."</p>
+    </div>
+  </div>
+</section>
+
+<!-- BEFORE AFTER -->
+<section class="ba">
+  <div class="wrap--wide">
+    <div class="wrap">
+      <h2 class="ba__h2 display up">Before ACOS. After ACOS.</h2>
+      <p class="ba__sub up">Same team. Same writers. Same budget. Completely different results.</p>
+    </div>
+    <div class="ba__grid up">
+      <div class="ba__col ba__col--b">
+        <div class="ba__tag">Before</div>
+        <div class="ba__row">Briefs that describe a topic, not an outcome</div>
+        <div class="ba__row">Writers filling gaps you never addressed</div>
+        <div class="ba__row">Editing sessions two hours longer than they should be</div>
+        <div class="ba__row">AI output that reads well and goes nowhere</div>
+        <div class="ba__row">Quality that lives in your head and stays there</div>
+        <div class="ba__row">Results you cannot predict or explain to a founder</div>
+      </div>
+      <div class="ba__arrow">→</div>
+      <div class="ba__col ba__col--a">
+        <div class="ba__tag">After</div>
+        <div class="ba__row">Decisions made before a single word is written</div>
+        <div class="ba__row">Writers with real direction, not inherited guesses</div>
+        <div class="ba__row">Editing that sharpens good work instead of fixing bad decisions</div>
+        <div class="ba__row">AI output that actually serves the strategy you set</div>
+        <div class="ba__row">The standard lives in the system and travels with the team</div>
+        <div class="ba__row">Results you can read before the piece even goes live</div>
+      </div>
+    </div>
+    <div class="ba__promise up">
+      <p>Every piece of content starts with a decision. ACOS Lite makes sure <strong>that decision actually happens</strong> before anyone opens a blank document.</p>
+    </div>
+  </div>
+</section>
+
+<!-- INSIDE -->
+<section class="inside">
+  <div class="wrap--wide">
+    <div class="wrap">
+      <h2 class="inside__h2 display up">What you get inside ACOS Lite.</h2>
+      <p class="inside__sub up">A Notion-based content decision framework that governs what happens before writing starts, so everything downstream actually works.</p>
+    </div>
+    <div class="inside__grid up">
+      <div class="inside__item">
+        <div class="inside__num">01</div>
+        <div><div class="inside__name">The Write / No-Write Gate</div><div class="inside__desc">Should this piece exist at all? This one checkpoint alone removes a significant chunk of content that would have been written, published, and done nothing.</div></div>
+      </div>
+      <div class="inside__item">
+        <div class="inside__num">02</div>
+        <div><div class="inside__name">Reader Problem Framework</div><div class="inside__desc">Not a persona. A real person at a specific moment with a specific frustration and a belief that needs to shift. When your writer sees that person clearly, the whole piece changes.</div></div>
+      </div>
+      <div class="inside__item">
+        <div class="inside__num">03</div>
+        <div><div class="inside__name">Outcome Promise Architect</div><div class="inside__desc">What will the reader be able to do, think, or decide differently after reading? This section forces the answer before writing begins.</div></div>
+      </div>
+      <div class="inside__item">
+        <div class="inside__num">04</div>
+        <div><div class="inside__name">Content Angle Decision</div><div class="inside__desc">The entry point that separates your content from the forty other articles covering the same topic. Also the decision most teams skip entirely.</div></div>
+      </div>
+      <div class="inside__item">
+        <div class="inside__num">05</div>
+        <div><div class="inside__name">AI Brief Guidance</div><div class="inside__desc">Structured inputs that make your AI tool produce something strategically useful. You are not giving AI a prompt — you are giving it the thinking the prompt needed.</div></div>
+      </div>
+      <div class="inside__item">
+        <div class="inside__num">06</div>
+        <div><div class="inside__name">Five More Decision Sections</div><div class="inside__desc">Structure, tone, competitive framing, internal link strategy, and content lifecycle — all completed before writing begins.</div></div>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="inside__banner up">
+        <p>When your writer finishes the framework, the article has already been architected. <strong>A new hire, a senior writer, or an AI tool</strong> can execute it. No chasing. No redirecting. No 11pm edits.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHO -->
+<section class="who">
+  <div class="wrap">
+    <h2 class="who__h2 display up">This is for you if —</h2>
+    <ul class="who__list up">
+      <li>You are a <strong>content lead or head of content</strong> spending too many hours fixing the direction of work that should have been right from the start.</li>
+      <li>You are a <strong>B2B SaaS founder managing a content team</strong> who needs consistent output whether you are in the room or not.</li>
+      <li>You are a <strong>strategist whose best thinking lives only in your head</strong> and you need a system that puts it somewhere your team and your AI tools can reach it.</li>
+      <li>You have tried <strong>AI content tools and walked away underwhelmed</strong> — because the problem was never the AI. It was the clarity of what you gave it to work with.</li>
+    </ul>
+    <div class="who__no up">
+      <div class="who__no-tag">This is not for you if —</div>
+      <p>You are looking for a writing tool, an SEO checklist, or a prompt library. ACOS Lite works at the layer before all of those things. If the decisions before the writing are the problem, nothing else will fix it either.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="wrap">
+    <h2 class="pricing__h2 display up">The founding price.</h2>
+    <p class="pricing__sub up">The people who buy first shape what this system becomes. The price reflects that.</p>
+    <div class="card up">
+      <div class="card__badge">Founding Cohort</div>
+      <div class="card__inner">
+        <div class="card__tier">ACOS Lite</div>
+        <div class="card__name">Content Decision Framework</div>
+        <div class="card__price">$15</div>
+        <div class="card__usd">founding price — 30 days only</div>
+        <div class="card__after">After 30 days: <strong>$30</strong>. Then <strong>$129</strong> when the full ACOS system is live. No codes. No extensions.</div>
+        <ul class="card__list">
+          <li>Write / No-Write Gate — the first filter every brief needs</li>
+          <li>10 sections of pre-writing decision architecture in Notion</li>
+          <li>Reader Problem, Outcome Promise, and Content Angle frameworks</li>
+          <li>AI brief guidance that makes AI output actually useful</li>
+          <li>Internal link strategy decision section</li>
+          <li>Lifetime access and all future updates</li>
+          <li>Founding cohort access — your feedback shapes what gets built next</li>
+        </ul>
+        <div class="card__urgency"><strong>30 days from launch.</strong> On day 31 the price becomes $30. This is a real deadline with a real consequence.</div>
+        <a href="https://graceomolola.gumroad.com/l/ACOS_lite" class="btn btn--block" target="_blank">Get ACOS Lite — $15 Founding Price</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL -->
+<section class="final">
+  <div class="wrap">
+    <h2 class="final__h2 display up">The most expensive decision is the one you keep putting off.</h2>
+    <p class="final__sub up">Every piece your team publishes without a decision architecture had to work harder than it needed to. That changes today.</p>
+    <div class="up">
+      <a href="https://graceomolola.gumroad.com/l/ACOS_lite" class="btn" target="_blank">Get ACOS Lite — $15</a>
+    </div>
+    <p class="final__note up">Founding price. Closes in 30 days. Delivered instantly via Gumroad.</p>
+  </div>
+</section>
+
+<footer class="footer">
+  <p>ACOS Lite &nbsp;·&nbsp; Built by <strong>Grace Omolola Odukoya</strong> &nbsp;·&nbsp; Content Decision Architecture for B2B SaaS Content Teams</p>
+</footer>
+
+<script>
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('show'); });
+  },{threshold:0.08,rootMargin:'0px 0px -32px 0px'});
+  document.querySelectorAll('.up').forEach(el => io.observe(el));
+  const sticky = document.getElementById('sticky');
+  window.addEventListener('scroll',()=>{ sticky.classList.toggle('on', window.scrollY > 400); });
+</script>
+</body>
+  </html>
